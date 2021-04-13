@@ -1,0 +1,31 @@
+{
+  "name": "@aha-develop/jira-import",
+  "version": "1.0.0",
+  "description": "Jira import for Aha! develop",
+  "main": "index.js",
+  "repository": "https://github.com/aha-develop/jira-import.git",
+  "author": "Aha! Develop",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3"
+  },
+  "dependencies": {
+    "@aha-app/aha-cli": "^1.7.1",
+    "@aha-app/aha-develop-react": "^1.0.4"
+  },
+  "ahaExtension": {
+    "cspSources": [
+      "https://api.atlassian.com",
+      "https://auth.atlassian.com"
+    ],
+    "contributes": {
+      "importers": {
+        "issues": {
+          "title": "Jira issues",
+          "entryPoint": "src/issues.tsx"
+        }
+      }
+    }
+  }
+}
