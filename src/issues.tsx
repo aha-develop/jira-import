@@ -14,6 +14,26 @@ const importer = aha.getImporter<Issue>("aha-develop.jira-import.issues");
 const jira = new Atlassian("jira");
 const MAX_RESULTS = 25;
 
+const apiPaths = {
+  project: (id: string) => `/rest/api/3/project/${id}?expand=issueTypes`,
+  searchForProject: (name: string) =>
+    `/rest/api/3/project/search?query=${encodeURIComponent(name)}`,
+  allIssueTypes: () => "/rest/api/3/issuetype",
+  searchForIssues: (jql: string, startAt: number, fields: string[]) => {
+    const query = [
+      ["jql", encodeURIComponent(jql)],
+      ["maxResults", MAX_RESULTS],
+      ["startAt", startAt],
+      ["fields", fields.map(encodeURIComponent).join(",")],
+      ["expand", "renderedFields"],
+    ]
+      .map((pair) => pair.join("="))
+      .join("&");
+
+    return `/rest/api/3/search?${query}`;
+  },
+};
+
 importer.on({ action: "listFilters" }, async () => {
   await jira.authenticate();
 
@@ -35,13 +55,16 @@ importer.on({ action: "listFilters" }, async () => {
     },
   };
 
-  if (jira.resources.length > 1) {
-    filters["resource"] = {
-      title: "Account",
-      required: true,
-      type: "select",
-    };
-  }
+  // It appears that you can only authorize one resource at a time, so this
+  // filter is disabled
+  //
+  // if (jira.resources.length > 1) {
+  //   filters["resource"] = {p
+  //     title: "Account",
+  //     required: true,
+  //     type: "select",
+  //   };
+  // }
 
   return filters;
 });
@@ -62,7 +85,7 @@ importer.on({ action: "filterValues" }, async ({ filterName, filters }) => {
       if (filters.project) {
         try {
           const response = await jira.fetch(
-            `/rest/api/3/project/${filters.project}?expand=issueTypes`,
+            apiPaths.project(filters.project),
             resource
           );
           types = response.issueTypes;
@@ -72,9 +95,10 @@ importer.on({ action: "filterValues" }, async ({ filterName, filters }) => {
       }
 
       if (!types) {
-        types = await jira.fetch("/rest/api/3/issuetype", resource);
+        types = await jira.fetch(apiPaths.allIssueTypes(), resource);
       }
 
+      // issue types are uniqued by name
       return [
         ...(types || []).reduce((acc: Set<any>, it) => {
           acc.add(it.name);
@@ -84,7 +108,7 @@ importer.on({ action: "filterValues" }, async ({ filterName, filters }) => {
     }
     case "project":
       const response = await jira.fetch(
-        `/rest/api/3/project/search?query=${filters.project}`,
+        apiPaths.searchForProject(filters.project),
         filters.resource || jira.resources[0].id
       );
       const projects = response.values;
@@ -110,16 +134,19 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
     .join(" AND ");
 
   const response = await jira.fetch(
-    `/rest/api/3/search?jql=${encodeURIComponent(
-      jql
-    )}&maxResults=${MAX_RESULTS}&startAt=${
-      nextPage || 0
-    }&fields=id,key,issuetype,summary,description,comment,attachment&expand=renderedFields`,
+    apiPaths.searchForIssues(jql, nextPage || 0, [
+      "id",
+      "key",
+      "issuetype",
+      "summary",
+      "description",
+      "comment",
+      "attachment",
+    ]),
     filters.resource || jira.resources[0].id
   );
 
   const issues = response.issues as any[];
-  console.log(issues);
 
   return {
     records: issues.map((issue) => ({
