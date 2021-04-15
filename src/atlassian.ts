@@ -60,7 +60,6 @@ export class Atlassian {
       }
     }
 
-    console.log(this);
     this._authing = false;
   }
 
