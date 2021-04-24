@@ -126,7 +126,7 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
   await jira.authenticate();
 
   const jql = [
-    `project=${filters.project}`,
+    `project="${filters.project}"`,
     filters.issuetype ? `(issuetype="${filters.issuetype}")` : null,
     filters.jql ? `(${filters.jql})` : null,
   ]
@@ -153,7 +153,7 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
       uniqueId: issue.id,
       name: issue.fields.summary,
       identifier: issue.key,
-      url: issue.self,
+      url: `${jira.resources[0].url}/browse/${issue.key}`,
       key: issue.key,
       description: issue.renderedFields?.description || "",
       issuetype: issue.fields.issuetype,
