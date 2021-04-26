@@ -35,13 +35,11 @@ const apiPaths = {
 };
 
 importer.on({ action: "listFilters" }, async () => {
-  await jira.authenticate();
-
-  const filters = {
+  return {
     project: {
       title: "Project",
       required: true,
-      type: "text",
+      type: "autocomplete",
     },
     issuetype: {
       title: "Issue type",
@@ -54,19 +52,6 @@ importer.on({ action: "listFilters" }, async () => {
       type: "text",
     },
   };
-
-  // It appears that you can only authorize one resource at a time, so this
-  // filter is disabled
-  //
-  // if (jira.resources.length > 1) {
-  //   filters["resource"] = {p
-  //     title: "Account",
-  //     required: true,
-  //     type: "select",
-  //   };
-  // }
-
-  return filters;
 });
 
 importer.on({ action: "filterValues" }, async ({ filterName, filters }) => {

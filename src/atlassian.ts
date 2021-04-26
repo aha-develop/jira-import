@@ -29,6 +29,10 @@ export class Atlassian {
     return this._authing;
   }
 
+  get authenticated() {
+    return Boolean(this._token);
+  }
+
   get headers() {
     return {
       Authorization: "Bearer " + this.token,
