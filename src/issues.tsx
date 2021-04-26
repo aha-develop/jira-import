@@ -12,7 +12,7 @@ interface Issue extends Aha.ImportRecord {
 
 const importer = aha.getImporter<Issue>("aha-develop.jira-import.issues");
 const jira = new Atlassian("jira");
-const MAX_RESULTS = 25;
+const MAX_RESULTS = 50;
 
 const apiPaths = {
   project: (id: string) => `/rest/api/3/project/${id}?expand=issueTypes`,
@@ -44,7 +44,7 @@ importer.on({ action: "listFilters" }, async () => {
     issuetype: {
       title: "Issue type",
       required: false,
-      type: "select",
+      type: "autocomplete",
     },
     jql: {
       title: "JQL",
@@ -132,6 +132,8 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
   );
 
   const issues = response.issues as any[];
+  const nextNextPage =
+    issues.length === 0 ? null : (nextPage || 0) + MAX_RESULTS;
 
   return {
     records: issues.map((issue) => ({
@@ -143,7 +145,7 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
       description: issue.renderedFields?.description || "",
       issuetype: issue.fields.issuetype,
     })),
-    nextPage: (nextPage || 0) + MAX_RESULTS,
+    nextPage: nextNextPage,
   };
 });
 
@@ -175,9 +177,11 @@ importer.on({ action: "renderRecord" }, ({ record, onUnmounted }) => {
             </div>
           </div>
           <div className="card__section">
-            <a href={record.url} target="_blank" rel="noopener noreferrer">
-              <i className="text-muted fa-solid fa-external-link"></i>
-            </a>
+            <div className="card__field">
+              <a href={record.url} target="_blank" rel="noopener noreferrer">
+                <i className="text-muted fa-solid fa-external-link"></i>
+              </a>
+            </div>
           </div>
         </div>
         <div className="card__row">
