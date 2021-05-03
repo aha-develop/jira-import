@@ -4,7 +4,7 @@
   "description": "Jira import for Aha! develop",
   "main": "index.js",
   "repository": "https://github.com/aha-develop/jira-import.git",
-  "author": "Aha! Develop",
+  "author": "Aha! (support@aha.io)",
   "license": "MIT",
   "devDependencies": {
     "@types/react": "^17.0.3",
