@@ -14,6 +14,14 @@ export class AuthError extends Error {
   }
 }
 
+/**
+ * Class for fetching from atlassian API using oAuth. The service to call is set
+ * by the constructor:
+ *
+ * ```
+ * const jira = new Atlassian("jira");
+ * ```
+ */
 export class Atlassian {
   private _token: string;
   private _authing: boolean = false;
@@ -44,6 +52,9 @@ export class Atlassian {
     return this._accessibleResources;
   }
 
+  /**
+   * @param useCache force a full re-auth even if the token is already cached
+   */
   async authenticate(useCache = true) {
     if (useCache && this._token) return;
 
@@ -67,6 +78,10 @@ export class Atlassian {
     this._authing = false;
   }
 
+  /**
+   * Load the resources. This must be done before calling fetch as the resource
+   * id is required for each API call.
+   */
   async loadResources() {
     const response = await fetch(
       "https://api.atlassian.com/oauth/token/accessible-resources",
@@ -86,6 +101,11 @@ export class Atlassian {
     this._accessibleResources = json;
   }
 
+  /**
+   * @param path API path. This should be the path part only as per the standard API
+   * @param resourceId id of the resource as given by this.resources[0].id
+   * @param options Fetch options
+   */
   async fetch(path: string, resourceId: string, options: RequestInit = {}) {
     const url = `${API_ENDPOINT}/ex/${this.service}/${resourceId}${path}`;
 

@@ -12,6 +12,8 @@ interface Issue extends Aha.ImportRecord {
 
 const importer = aha.getImporter<Issue>("aha-develop.jira-import.issues");
 const jira = new Atlassian("jira");
+
+// Only load 50 issues at a time
 const MAX_RESULTS = 50;
 
 const apiPaths = {
@@ -149,6 +151,7 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
   };
 });
 
+// Set the record description on import
 importer.on({ action: "importRecord" }, async ({ importRecord, ahaRecord }) => {
   if (importRecord.description.length > 0) {
     (ahaRecord as any).description = importRecord.description;
@@ -157,7 +160,8 @@ importer.on({ action: "importRecord" }, async ({ importRecord, ahaRecord }) => {
   await ahaRecord.save();
 });
 
-importer.on({ action: "renderRecord" }, ({ record, onUnmounted }) => {
+// Custom record rendering so it can display the correct issue type icon
+importer.on({ action: "renderRecord" }, ({ record }) => {
   const issuetype = record.issuetype;
 
   return (
