@@ -168,7 +168,7 @@ importer.on({ action: "renderRecord" }, ({ record }) => {
     <div style={{ display: "flex", flexDirection: "row", gap: "4px" }}>
       {issuetype && (
         <img
-          src={issuetype.iconUrl}
+          src={aha.sanitizeUrl(issuetype.iconUrl)}
           alt={issuetype.name}
           style={{ height: "30px" }}
         />
@@ -182,7 +182,7 @@ importer.on({ action: "renderRecord" }, ({ record }) => {
           </div>
           <div className="card__section">
             <div className="card__field">
-              <a href={record.url} target="_blank" rel="noopener noreferrer">
+              <a href={aha.sanitizeUrl(record.url)} target="_blank" rel="noopener noreferrer">
                 <i className="text-muted fa-solid fa-external-link"></i>
               </a>
             </div>
@@ -191,7 +191,7 @@ importer.on({ action: "renderRecord" }, ({ record }) => {
         <div className="card__row">
           <div className="card__section">
             <div className="card__field">
-              <a href={record.url} target="_blank" rel="noopener noreferrer">
+              <a href={aha.sanitizeUrl(record.url)} target="_blank" rel="noopener noreferrer">
                 {record.name}
               </a>
             </div>
