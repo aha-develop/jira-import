@@ -2,9 +2,15 @@
 
 This is an importer extension for [Aha! Develop](https://www.aha.io/develop) for importing Jira issues.
 
-# Demo
+## Demo
 
 https://user-images.githubusercontent.com/8016/116958533-14240c00-acef-11eb-8128-d9a359fe5510.mp4
+
+## Installing the extension
+
+**Note: In order to install an extension into your Aha! Develop account, you must be an account administrator.**
+
+Install the Jira importer extension by clicking [here](https://secure.aha.io/settings/account/extensions/install?url=https%3A%2F%2Fsecure.aha.io%2Fextensions%2Faha-develop.jira-import.gz).
 
 ## Working on the extension
 
