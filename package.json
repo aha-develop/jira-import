@@ -1,6 +1,6 @@
 {
   "name": "@aha-develop/jira-import",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Jira import for Aha! develop",
   "main": "index.js",
   "repository": "https://github.com/aha-develop/jira-import.git",
