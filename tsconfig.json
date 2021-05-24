@@ -12,5 +12,5 @@
     "target": "ES6",
     "strict": true
   },
-  "include": ["node_modules/aha-cli/aha.d.ts", "src/**/*.ts*", "test/**/*.ts"]
+  "include": [".aha-cache/aha.d.ts", "src/**/*.ts*", "test/**/*.ts"]
 }
