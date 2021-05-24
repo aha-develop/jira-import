@@ -56,58 +56,65 @@ importer.on({ action: "listFilters" }, async () => {
   };
 });
 
-importer.on({ action: "filterValues" }, async ({ filterName, filters }) => {
-  await jira.authenticate();
-  const resource = filters.resource || jira.resources[0].id;
+importer.on(
+  { action: "filterValues" },
+  async ({ filterName, filters }): Promise<Aha.FilterValue[]> => {
+    await jira.authenticate();
+    const resource = filters.resource || jira.resources[0].id;
 
-  switch (filterName) {
-    case "resource":
-      return jira.resources.map((resource) => ({
-        text: resource.name,
-        value: resource.id,
-      }));
-    case "issuetype": {
-      let types: any[] | null = null;
+    switch (filterName) {
+      case "resource":
+        return jira.resources.map((resource) => ({
+          text: resource.name,
+          value: resource.id,
+        }));
+      case "issuetype": {
+        let types: any[] | null = null;
 
-      if (filters.project) {
-        try {
-          const response = await jira.fetch(
-            apiPaths.project(filters.project),
-            resource
-          );
-          types = response.issueTypes;
-        } catch (err) {
-          console.log("fallback to all issuetypes");
+        if (filters.project) {
+          try {
+            const response = await jira.fetch<{ issueTypes: [] }>(
+              apiPaths.project(filters.project),
+              resource
+            );
+            types = response.issueTypes;
+          } catch (err) {
+            console.log("fallback to all issuetypes");
+          }
         }
-      }
 
-      if (!types) {
-        types = await jira.fetch(apiPaths.allIssueTypes(), resource);
-      }
+        if (!types) {
+          types = await jira.fetch<any[]>(apiPaths.allIssueTypes(), resource);
+        }
 
-      // issue types are uniqued by name
-      return [
-        ...(types || []).reduce((acc: Set<any>, it) => {
-          acc.add(it.name);
-          return acc;
-        }, new Set()),
-      ].map((it) => ({ text: it, value: it }));
+        // issue types are uniqued by name
+        const issueTypeNames: string[] = [
+          ...(types || []).reduce((acc: Set<string>, it) => {
+            acc.add(it.name);
+            return acc;
+          }, new Set()),
+        ];
+
+        return issueTypeNames.map((it) => ({ text: it, value: it }));
+      }
+      case "project":
+        const response = await jira.fetch<{
+          values: { name: string; key: string }[];
+        }>(
+          apiPaths.searchForProject(filters.project),
+          filters.resource || jira.resources[0].id
+        );
+        const projects = response.values;
+
+        return projects.map((project) => ({
+          text: project.name,
+          value: project.key,
+        }));
     }
-    case "project":
-      const response = await jira.fetch(
-        apiPaths.searchForProject(filters.project),
-        filters.resource || jira.resources[0].id
-      );
-      const projects = response.values;
 
-      return projects.map((project) => ({
-        text: project.name,
-        value: project.key,
-      }));
+    return [];
   }
-
-  return [];
-});
+);
 
 importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
   await jira.authenticate();
@@ -120,7 +127,7 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
     .filter(Boolean)
     .join(" AND ");
 
-  const response = await jira.fetch(
+  const response = await jira.fetch<{ issues: any[] }>(
     apiPaths.searchForIssues(jql, nextPage || 0, [
       "id",
       "key",
@@ -133,7 +140,7 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
     filters.resource || jira.resources[0].id
   );
 
-  const issues = response.issues as any[];
+  const issues = response.issues;
   const nextNextPage =
     issues.length === 0 ? null : (nextPage || 0) + MAX_RESULTS;
 
@@ -153,9 +160,9 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
 
 // Set the record description on import
 importer.on({ action: "importRecord" }, async ({ importRecord, ahaRecord }) => {
-  if (importRecord.description.length > 0) {
-    (ahaRecord as any).description = importRecord.description;
-  }
+  let description = importRecord.description || "";
+  description = `${description}<p><a href='${importRecord.url}'>View on Jira</a></p>`;
+  ahaRecord.description = description;
 
   await ahaRecord.save();
 });

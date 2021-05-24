@@ -23,9 +23,9 @@ export class AuthError extends Error {
  * ```
  */
 export class Atlassian {
-  private _token: string;
+  private _token?: string;
   private _authing: boolean = false;
-  private _accessibleResources: AtlassianResource[];
+  private _accessibleResources: AtlassianResource[] = [];
 
   constructor(private service: string) {}
 
@@ -106,7 +106,7 @@ export class Atlassian {
    * @param resourceId id of the resource as given by this.resources[0].id
    * @param options Fetch options
    */
-  async fetch(path: string, resourceId: string, options: RequestInit = {}) {
+  async fetch<T>(path: string, resourceId: string, options: RequestInit = {}) {
     const url = `${API_ENDPOINT}/ex/${this.service}/${resourceId}${path}`;
 
     const response = await fetch(url, {
@@ -114,6 +114,6 @@ export class Atlassian {
       headers: this.headers,
     });
     const json = await response.json();
-    return json;
+    return json as T;
   }
 }

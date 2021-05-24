@@ -7,12 +7,17 @@
   "author": "Aha! (support@aha.io)",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^26.0.23",
     "@types/react": "^17.0.3",
-    "@types/react-dom": "^17.0.3"
+    "@types/react-dom": "^17.0.3",
+    "aha-cli": "^1.9.6",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.6",
+    "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@aha-app/aha-cli": "^1.7.1",
-    "@aha-app/aha-develop-react": "^1.0.4"
+    "@aha-app/aha-develop-react": "^1.0.4",
+    "react": "^17.0.2"
   },
   "ahaExtension": {
     "cspSources": [
