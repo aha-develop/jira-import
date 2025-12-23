@@ -21,18 +21,23 @@ const apiPaths = {
   searchForProject: (name: string) =>
     `/rest/api/3/project/search?query=${encodeURIComponent(name)}`,
   allIssueTypes: () => "/rest/api/3/issuetype",
-  searchForIssues: (jql: string, startAt: number, fields: string[]) => {
-    const query = [
+  searchForIssues: (jql: string, nextPageToken: string | null, fields: string[]) => {
+    const params = [
       ["jql", encodeURIComponent(jql)],
       ["maxResults", MAX_RESULTS],
-      ["startAt", startAt],
       ["fields", fields.map(encodeURIComponent).join(",")],
       ["expand", "renderedFields"],
-    ]
+    ];
+
+    if (nextPageToken) {
+      params.push(["nextPageToken", nextPageToken]);
+    }
+
+    const query = params
       .map((pair) => pair.join("="))
       .join("&");
 
-    return `/rest/api/3/search?${query}`;
+    return `/rest/api/3/search/jql?${query}`;
   },
 };
 
@@ -127,8 +132,8 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
     .filter(Boolean)
     .join(" AND ");
 
-  const response = await jira.fetch<{ issues: any[] }>(
-    apiPaths.searchForIssues(jql, nextPage || 0, [
+  const response = await jira.fetch<{ issues: any[]; nextPageToken?: string }>(
+    apiPaths.searchForIssues(jql, nextPage, [
       "id",
       "key",
       "issuetype",
@@ -142,7 +147,7 @@ importer.on({ action: "listCandidates" }, async ({ filters, nextPage }) => {
 
   const issues = response.issues;
   const nextNextPage =
-    issues.length === 0 ? null : (nextPage || 0) + MAX_RESULTS;
+    response.nextPageToken ? response.nextPageToken : null;
 
   return {
     records: issues.map((issue) => ({
